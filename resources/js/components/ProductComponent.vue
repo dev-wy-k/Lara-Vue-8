@@ -1,5 +1,6 @@
 <template>
   <div class="container my-5">
+    <!-- Search  -->
     <div class="row mb-3">
       <div class="col-12">
         <div class="row justify-content-between">
@@ -12,9 +13,14 @@
           </div>
           <div class="col-2"></div>
           <div class="col-3">
-            <form>
+            <form @submit.prevent="view">
               <div class="input-group">
-                <input type="text" class="form-control" placeholder="Search" />
+                <input
+                  v-model="search"
+                  type="text"
+                  class="form-control"
+                  placeholder="Search"
+                />
                 <button type="submit" class="input-group-text btn btn-primary">
                   <i class="fas fa-search"></i>
                 </button>
@@ -24,20 +30,25 @@
         </div>
       </div>
     </div>
+    <!-- Search End  -->
 
     <div class="row">
+      <!-- Form  -->
       <div class="col-12 col-md-4">
         <div class="card">
-          <h4 class="card-header">{{ isEditMode ? 'Edit' : 'Create'}}</h4>
+          <h4 class="card-header">{{ isEditMode ? "Edit" : "Create" }}</h4>
           <div class="card-body">
-            <form @submit.prevent=" isEditMode ? update() : store() ">
+            <form @submit.prevent="isEditMode ? update() : store()">
+              <AlertError :form="product" :message="message" ></AlertError>
               <div class="mb-3">
                 <label class="form-label">Name :</label>
                 <input
                   v-model="product.name"
                   type="text"
                   class="form-control"
+                  :class="{ 'is-invalid' : product.errors.has('name') }"
                 />
+                <HasError :form="product" field="name" ></HasError>
               </div>
 
               <div class="mb-3">
@@ -46,7 +57,9 @@
                   v-model="product.price"
                   type="number"
                   class="form-control"
+                  :class="{ 'is-invalid' : product.errors.has('price') }"
                 />
+                <HasError :form="product" field="price" ></HasError>
               </div>
 
               <button class="btn btn-primary" type="submit">
@@ -57,8 +70,11 @@
           </div>
         </div>
       </div>
+      <!-- Form End  -->
+
+      <!-- Table  -->
       <div class="col-12 col-md-8">
-        <table class="table table-hover table-striped">
+        <table class="table table-hover">
           <thead>
             <tr>
               <th>ID</th>
@@ -69,22 +85,31 @@
           </thead>
 
           <tbody>
-            <tr v-for="product in products" :key="product.id">
+            <tr v-for="product in products.data" :key="product.id">
               <td>{{ product.id }}</td>
               <td>{{ product.name }}</td>
               <td>{{ product.price }}</td>
               <td>
-                <button class="btn btn-success btn-sm" @click="edit(product)">
+                <button class="btn btn-success btn-sm text-white" @click="edit(product)">
                   <i class="fas fa-edit me-1"></i> Edit
                 </button>
-                <button class="btn btn-danger btn-sm" @click="destroy(product.id)">
+                <button
+                  class="btn btn-danger btn-sm"
+                  @click="destroy(product.id)"
+                >
                   <i class="fas fa-trash-alt me-1"></i> Delete
                 </button>
               </td>
             </tr>
           </tbody>
         </table>
+
+        <pagination
+          :data="products"
+          @pagination-change-page="view"
+        ></pagination>
       </div>
+      <!-- Table End -->
     </div>
   </div>
 </template>
@@ -94,88 +119,100 @@ export default {
   name: "ProductComponent",
   data() {
     return {
-        isEditMode : false ,
-        products: [],
-        product: {
-            id : "",
-            name: "",
-            price: "",
-      },
+      isEditMode: false,
+      message: "",
+      search: "",
+      products: {},
+      product: new Form({
+        id: "",
+        name: "",
+        price: "",
+      }),
     };
   },
   methods: {
-    view() {
+    view(page = 1) {
+      this.$Progress.start();
+      let loader = this.$loading.show();
+      
       axios
-        .get("/api/product")
+        .get(`/api/product?page=${page}&search=${this.search}`)
         .then((result) => {
-          this.products = result.data;
+          this.products = result.data;  
+          this.$Progress.finish();
+          loader.hide();
         })
         .catch((err) => {
-          console.log(err);
+          this.$Progress.fail();
         });
     },
 
     store() {
-      axios
-        .post("/api/product", this.product)
+      this.product.post("/api/product")
         .then((result) => {
           this.view();
-          this.product = {
-            id : "",
-            name: "",
-            price: "",
-          };
+          this.product.reset();
+          Toast.fire({
+            icon: 'success',
+            title: 'Created successfully'
+          })
         })
         .catch((err) => {
-          console.log(err);
+          this.message = err.response.data.message;
         });
     },
 
     create() {
-        this.isEditMode = false ,
-        this.product.id  = "",
-        this.product.name = "",
-        this.product.price = ""
+        this.product.clear();
+        this.isEditMode = false;
+        this.product.reset();
     },
 
     edit(product) {
-        this.isEditMode = true ,
-        this.product.id  = product.id,
-        this.product.name = product.name,
-        this.product.price = product.price
-     
+        this.product.clear();
+        this.isEditMode = true ;
+        this.product.fill(product);
     },
 
     update() {
-        axios
-        .put(`/api/product/${this.product.id}`, this.product)
+      this.product.put(`/api/product/${this.product.id}`)
         .then((result) => {
           this.view();
-          this.product = {
-            name: "",
-            price: "",
-          };
-          this.isEditMode = false ;
+          this.product.reset();
+          this.isEditMode = false;
+          Toast.fire({
+            icon: 'success',
+            title: 'Updated successfully'
+          })
         })
         .catch((err) => {
-          console.log(err);
+          this.message = err.response.data.message;
         });
     },
 
     destroy(id) {
 
-      if( ! confirm('Are you sure to delete ?')){
-          return ;
-      }  
-      axios.delete(`/api/product/${id}`)
-      .then((result) => {
-          this.view();
-      }).catch((err) => {
-            
-      });
+      Swal.fire({
+        title: 'Are you sure ?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it !'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          Swal.fire({ icon : 'success' , title : 'Deleted !' });
+          axios.delete(`/api/product/${id}`)
+          .then((result) => {
+            this.view();
+          });
+          Toast.fire({
+            icon: 'success',
+            title: 'Deleted successfully'
+          })
+        }
+      });      
+      
     },
-
-  },  
+  },
 
   created() {
     this.view();

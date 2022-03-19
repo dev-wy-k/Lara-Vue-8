@@ -7,13 +7,15 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.6.0/css/all.min.css">
         <link rel="stylesheet" href="/css/app.css">
 
-        <title>Laravel SPA</title>
+        <link rel="icon" href="{{ asset('favicon.ico') }}">
+        <title>Laravel Vue</title>
         
     </head>
     <body class="">
         
     <div id="app">
         <product-component></product-component>
+        <vue-progress-bar></vue-progress-bar>
     </div>
 
     </body>
