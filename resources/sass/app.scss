@@ -1,8 +1,17 @@
 // Fonts
 @import url('https://fonts.googleapis.com/css?family=Nunito');
-
 // Variables
 @import 'variables';
-
 // Bootstrap
+$primary: #9d6b53;
+$success: #b1a7a6;
+$danger: #a4161a;
 @import '~bootstrap/scss/bootstrap';
+@import '~vue-loading-overlay/dist/vue-loading.css';
+$swal2-confirm-button-background-color: $primary;
+$swal2-cancel-button-background-color: $danger;
+@import '~sweetalert2/src/sweetalert2.scss';
+table th,
+td {
+    vertical-align: middle;
+}

@@ -23,5 +23,12 @@
         "vue": "^2.6.12",
         "vue-loader": "^15.9.7",
         "vue-template-compiler": "^2.6.12"
+    },
+    "dependencies": {
+        "laravel-vue-pagination": "^2.3.1",
+        "sweetalert2": "^11.4.6",
+        "vform": "^2.1.2",
+        "vue-loading-overlay": "^3.4.2",
+        "vue-progressbar": "^0.7.5"
     }
 }

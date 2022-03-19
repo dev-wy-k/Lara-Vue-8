@@ -24,13 +24,15 @@ class UpdateProductRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => "nullable|string" ,
-            'price' => "nullable|numeric"
+            'name' => "required|string" ,
+            'price' => "required|numeric"
         ];
     }
 
     public function messages(){
         return [
+            "name.required" => "နာမည်လိုအပ်ပါတယ်" ,
+            "price.required" => "စျေးနှုန်းလိုအပ်ပါတယ်" ,
             "name.string" => "နာမည်သည် စာသားဖြစ်ရပါမယ်" ,
             "price.numeric" => "စျေးနှုန်းသည် ဂဏန်းဖြစ်ရပါမယ်" 
         ];
