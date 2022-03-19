@@ -11,7 +11,7 @@ class ProductController extends Controller
     
     public function index()
     {
-        $product = Product::all() ;
+        $product = Product::orderBy('id', 'desc')->get() ;
         return $product ;
     }
 
@@ -25,25 +25,21 @@ class ProductController extends Controller
     }
 
     
-    public function show($id)
+    public function show(Product $product)
     {
-        $product = Product::find($id); 
         return $product ;
     }
 
    
-    public function update(UpdateProductRequest $request, $id)
-    {
-        
-        $product = Product::find($id); 
+    public function update(UpdateProductRequest $request, Product $product)
+    { 
         $product->update($request->only('name', 'price')) ;
         return $product ;
     }
 
     
-    public function destroy($id)
-    {   
-        $product = Product::find($id); 
+    public function destroy(Product $product)
+    {
         $product->delete();
         return $product ;
     }
